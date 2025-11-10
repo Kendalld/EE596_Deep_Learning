@@ -1,0 +1,20 @@
+# Generated / local environments
+.venv/
+.venv*/
+.uv-cache/
+
+# Editor and tool state
+.cursor/
+.vscode/
+.idea/
+.DS_Store
+
+# Python build / cache artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Notebook noise
+.ipynb_checkpoints/
