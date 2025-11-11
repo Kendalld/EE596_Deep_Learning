@@ -4,7 +4,25 @@
 
 - Lab repository for assignments
 
-- All files must be labled in "Lab_#_XYZ.ipynb” format
+- All files must be labled in "Lab_#_XYZ.ipynb" format
+
+## Repository Structure
+
+```
+ee596_deep_learning/
+├── labs/                    # All lab deliverables
+│   └── Lab_#/
+│       └── Lab_#_Kendall_Davies/
+│           ├── Lab_#_Kendall_Davies.ipynb
+│           ├── datasets/    # Lab-specific datasets
+│           └── ...          # Helper scripts, figures, etc.
+├── resources/               # Course materials (read-only reference)
+│   └── Week_#/
+│       ├── examples/        # Example notebooks
+│       ├── templates/       # Lab templates
+│       └── *.pdf           # Lecture slides and lab instructions
+└── pyproject.toml          # Python dependencies
+```
 
 ## Environment Setup
 - Use [uv](https://github.com/astral-sh/uv) for dependency management: `uv venv && source .venv/bin/activate` followed by `uv sync`.
