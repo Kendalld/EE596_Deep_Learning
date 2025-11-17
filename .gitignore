@@ -8,6 +8,9 @@
 .vscode/
 .idea/
 
+# Datasets
+datasets/
+
 # Python build / cache artifacts
 __pycache__/
 *.py[cod]
