@@ -1,4 +1,4 @@
-#!/bin/bash
+cd#!/bin/bash
 #
 # Installation script for the pre-commit hook that prevents large files.
 # This script copies the hook to .git/hooks/pre-commit and makes it executable.

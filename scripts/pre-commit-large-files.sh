@@ -26,19 +26,33 @@ NC='\033[0m' # No Color
 
 # Track if we made any changes
 CHANGES_MADE=false
+NEEDS_ATTENTION=false
+UNHANDLED_FILES=()
 LARGE_FILES=()
+LARGE_FILE_STATUSES=()
+STAGED_PATHS=()
+STAGED_STATUSES=()
 
-# Get list of staged files
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+# Read staged files plus their status (A/M/C)
+while IFS=$'\t' read -r status file; do
+    if [ -z "$file" ]; then
+        continue
+    fi
+    STAGED_STATUSES+=("$status")
+    STAGED_PATHS+=("$file")
+done < <(git diff --cached --name-status --diff-filter=ACM)
 
-if [ -z "$STAGED_FILES" ]; then
+if [ ${#STAGED_PATHS[@]} -eq 0 ]; then
     exit 0
 fi
 
 echo "Checking staged files for size limit (${MAX_FILE_SIZE_MB}MB)..."
 
 # Check each staged file
-for file in $STAGED_FILES; do
+for idx in "${!STAGED_PATHS[@]}"; do
+    file="${STAGED_PATHS[$idx]}"
+    status="${STAGED_STATUSES[$idx]}"
+
     # Skip if file doesn't exist (might have been deleted)
     if [ ! -f "$file" ]; then
         continue
@@ -51,6 +65,7 @@ for file in $STAGED_FILES; do
         FILE_SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $FILE_SIZE / 1024 / 1024}")
         echo -e "${RED}WARNING:${NC} File '$file' is ${FILE_SIZE_MB}MB (exceeds ${MAX_FILE_SIZE_MB}MB limit)"
         LARGE_FILES+=("$file")
+        LARGE_FILE_STATUSES+=("$status")
     fi
 done
 
@@ -62,7 +77,22 @@ fi
 # Process large files
 echo -e "\n${YELLOW}Processing large files...${NC}"
 
-for file in "${LARGE_FILES[@]}"; do
+for idx in "${!LARGE_FILES[@]}"; do
+    file="${LARGE_FILES[$idx]}"
+    status="${LARGE_FILE_STATUSES[$idx]}"
+
+    case "$status" in
+        A|C)
+            # Added/copied files can be safely ignored
+            ;;
+        *)
+            echo "  Cannot auto-ignore tracked file: $file"
+            UNHANDLED_FILES+=("$file")
+            NEEDS_ATTENTION=true
+            continue
+            ;;
+    esac
+
     # Unstage the file
     git reset HEAD "$file" 2>/dev/null || true
     echo "  Unstaged: $file"
@@ -113,8 +143,14 @@ if [ "$CHANGES_MADE" = true ]; then
     echo -e "\n${GREEN}Updated .gitignore and README.md have been staged.${NC}"
 fi
 
-# Exit with error to prevent commit
-echo -e "\n${RED}Commit aborted:${NC} Files exceeding ${MAX_FILE_SIZE_MB}MB were detected and unstaged."
-echo "Please review the changes and commit again if needed."
-exit 1
+if [ "$NEEDS_ATTENTION" = true ]; then
+    echo -e "\n${RED}Commit blocked:${NC} The following tracked files exceed ${MAX_FILE_SIZE_MB}MB:"
+    for file in "${UNHANDLED_FILES[@]}"; do
+        echo "  - $file"
+    done
+    echo "Remove them from history or Git LFS before committing."
+    exit 1
+fi
 
+echo -e "\n${GREEN}Large files were automatically ignored. Commit will continue without them.${NC}"
+exit 0
