@@ -70,3 +70,9 @@ To use this hook in other repositories:
 3. Run the installation script from the new repo
 
 The hook is self-contained and doesn't require any external dependencies beyond standard Unix tools (bash, git, stat, awk, grep).
+
+## Large Files Ignored
+
+The following files exceed the configured pre-commit size limit and remain only in the working tree:
+
+- `resources/Week_6/examples/Lab6_Example/datasets/datasets/IMDB/aclImdb_v1.tar.gz` (80.23MB) – IMDB dataset archive for Week 6 examples

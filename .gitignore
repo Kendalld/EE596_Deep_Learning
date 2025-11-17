@@ -30,3 +30,6 @@ dist/
 ._*
 .Spotlight-V100
 .Trashes
+
+# Large local datasets
+resources/Week_6/examples/Lab6_Example/datasets/datasets/IMDB/aclImdb_v1.tar.gz
